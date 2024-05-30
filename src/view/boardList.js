@@ -24,31 +24,33 @@ function BoardList() {
 
 
 
-    const getAllBoard = async () => {
-        
+    const getAllBoard = async (type) => {
+        let url = `http://localhost:8081/getAllBoard?currentPage=${currentPage}`;
+        console.log(type)
         try {
-            setCurrentPage(pageNumber[0]);
-            setSearchInput('');
-            setStartDate('');
-            setEndDate('');
-            //const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}&searchType=${searchType}${searchInput ? `&searchInput=${searchInput}` : ''}${startDate ? `&startDate=${startDate}` : ''}${endDate ? `&endDate=${endDate}` : ''}`);
-            const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}&searchType=${searchType}&searchInput=${searchInput}${startDate ? `&startDate=${startDate}` : ''}${endDate ? `&endDate=${endDate}` : ''}`);
-                console.log(response.data);
-                setBoardCount(response.data.totalData);
-                console.log(response.data.totalData);
+            if (type === 'init') {
+                // 초기화 요청
+                const response = await axios.get(url);
                 setBoardData(response.data.data);
-                
                 setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
                 console.log(boardCount);
+            } else {
+                // 검색 요청
+                url += `&searchType=${searchType}&searchInput=${searchInput}${startDate ? `&startDate=${startDate}` : ''}${endDate ? `&endDate=${endDate}` : ''}`;
+                const response = await axios.get(url);
+                setBoardData(response.data.data);
+                setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
+            }
         } catch (e) {
-            console.log(e);
+            console.error(e);  // 오류 발생 시 콘솔에 로그 출력
         }
     };
+    
 
     const getBoardCount = async () => {
         try {
             const response = await axios.get(`http://localhost:8081/getBoardCount`);
-            setBoardCount(response.data);   
+            setBoardCount(response.data);
         } catch (e) {
             console.log(e);
         }
@@ -63,7 +65,7 @@ function BoardList() {
         }
     };
 
-    
+
 
     const openModal = () => {
         setIsOpen(true);
@@ -73,8 +75,11 @@ function BoardList() {
         setIsOpen(false);
     }
 
-    const AllData = () => {
-        
+    const allData = () => {
+        setCurrentPage(pageNumber[0]);
+        setSearchInput('');
+        setStartDate('');
+        setEndDate('');
         getAllBoard();
     }
 
@@ -85,13 +90,13 @@ function BoardList() {
 
 
     useEffect(() => {
-        getAllBoard(currentPage);
+        getAllBoard('search');
     }, [currentPage]);
 
-    useEffect(() => {
-        getBoardCount();
-        getBoardEmail();
-    }, [idx]);
+    // useEffect(() => {
+    //     getBoardCount();
+    //     getBoardEmail();
+    // }, [idx]);
 
     return (
         <><div id="WrapTitle">
@@ -100,16 +105,16 @@ function BoardList() {
             </div>
         </div><div id="WrapContainer">
                 <div className="container">
-                    <div className="wrap_tit">  
+                    <div className="wrap_tit">
                         <h2 className="tit_cont">자유게시판</h2>
                         <div className="ta_r">
                             총 갯수 <strong className="fc_p">{boardCount}</strong>건{" "}
                         </div>
                     </div>
 
-                    <BoardTable boardData={boardData} openModal={openModal} /> 
+                    <BoardTable boardData={boardData} openModal={openModal} />
 
-                    <Pagination currentPage={currentPage} pageNumber={pageNumber} setCurrentPage={setCurrentPage} /> 
+                    <Pagination currentPage={currentPage} pageNumber={pageNumber} setCurrentPage={setCurrentPage} />
 
                     <div className="flo_side right">
                         <button className="comm_btn_round fill"><Link to='/boardwrite'>글쓰기</Link></button>
@@ -117,18 +122,18 @@ function BoardList() {
 
                     <div className="box_search">
                         등록일
-                        <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={searchType!=="DATE"}/> ~
-                        <input type="date" className="comm_inp_date" onChange={(e) => setEndDate(e.target.value)} disabled={searchType!=="DATE"}/>
-                        <select className="comm_sel ml_10" onChange={(e) => setSearchType(e.target.value)}> 
-                            <option value={'TITLE'}>제목</option>   
-                            <option value={'TITLEANDCONTENT'}>제목+내용</option>  
-                            <option value={'WRITER'}>작성자</option>    
-                            <option value={'DATE'}>날짜</option>    
-                        </select>           
-                        <input type="text" className="comm_inp_text" style={{ width: "300px" }} value={searchInput} onChange={(e) => setSearchInput(e.target.value)} disabled={searchType==="DATE"}/>
-                        <button className="comm_btn fill" onClick={searchFunction}>검색</button>
-                                                                                                            
-                        <button className="comm_btn fill" onClick={AllData}>전체목록</button>
+                        <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={searchType !== "DATE"} /> ~
+                        <input type="date" className="comm_inp_date" onChange={(e) => setEndDate(e.target.value)} disabled={searchType !== "DATE"} />
+                        <select className="comm_sel ml_10" onChange={(e) => setSearchType(e.target.value)}>
+                            <option value={'TITLE'}>제목</option>
+                            <option value={'TITLEANDCONTENT'}>제목+내용</option>
+                            <option value={'WRITER'}>작성자</option>
+                            <option value={'DATE'}>날짜</option>
+                        </select>
+                        <input type="text" className="comm_inp_text" style={{ width: "300px" }} value={searchInput} onChange={(e) => setSearchInput(e.target.value)} disabled={searchType === "DATE"} />
+                        <button className="comm_btn fill" onClick={() => getAllBoard('search')}>검색</button>
+
+                        <button className="comm_btn fill" onClick={() => getAllBoard('init')}>전체목록</button>
                     </div>
                 </div>
             </div>

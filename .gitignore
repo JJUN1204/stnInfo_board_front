@@ -1,0 +1,10 @@
+# .gitignore
+
+# Node modules
+node_modules/
+
+# Other items to ignore
+.DS_Store
+.env
+build/
+coverage/
