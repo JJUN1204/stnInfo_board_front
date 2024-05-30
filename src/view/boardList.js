@@ -12,7 +12,7 @@ function BoardList() {
     const [isOpen, setIsOpen] = useState(false);
     const [boardCount, setBoardCount] = useState(0);
     const [boardEmail, setBoardEmail] = useState('');
-    const [boardData, setBoardData] = useState([]);
+
     const [fileCount, setFileCount] = useState(0);
     const [commentCount, setComentCount] = useState(0);
 
@@ -21,49 +21,61 @@ function BoardList() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
+    const [boardData, setBoardData] = useState([]);
+    const [search, setSearch] = useState({
+        searchType: 'TITLE',
+        searchInput: '테스트',
+        btnType: 'init'
+       
+    });
 
 
+    const init = () => {
+        setSearch({ searchType: 'TITLE', searchInput: '', btnType: 'init' });
+    };
 
-    const getAllBoard = async (type) => {
-        let url = `http://localhost:8081/getAllBoard?currentPage=${currentPage}`;
-        console.log(type)
+    useEffect(() => {
+        getAllBoard();
+    }, [search.btnType]);
+
+
+    const getAllBoard = async () => {
+
+        console.log(search.btnType)
+        console.log(search)
         try {
-            if (type === 'init') {
-                // 초기화 요청
-                const response = await axios.get(url);
-                setBoardData(response.data.data);
-                setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
-                console.log(boardCount);
-            } else {
-                // 검색 요청
-                url += `&searchType=${searchType}&searchInput=${searchInput}${startDate ? `&startDate=${startDate}` : ''}${endDate ? `&endDate=${endDate}` : ''}`;
-                const response = await axios.get(url);
-                setBoardData(response.data.data);
-                setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
-            }
+
+            // 초기화 요청
+            const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}&searchType=${search.searchType}&searchInput=${search.searchInput}&startDate=${startDate}&endDate=${endDate}`);
+            setBoardData(response.data.data);
+            setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
+
+
+
+
         } catch (e) {
             console.error(e);  // 오류 발생 시 콘솔에 로그 출력
         }
     };
-    
 
-    const getBoardCount = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8081/getBoardCount`);
-            setBoardCount(response.data);
-        } catch (e) {
-            console.log(e);
-        }
-    };
 
-    const getBoardEmail = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8081/getEmail?idx=${idx}`);
-            setBoardEmail(response.data);
-        } catch (e) {
-            console.log(e);
-        }
-    };
+    // const getBoardCount = async () => {
+    //     try {
+    //         const response = await axios.get(`http://localhost:8081/getBoardCount`);
+    //         setBoardCount(response.data);
+    //     } catch (e) {
+    //         console.log(e);
+    //     }
+    // };
+
+    // const getBoardEmail = async () => {
+    //     try {
+    //         const response = await axios.get(`http://localhost:8081/getEmail?idx=${idx}`);
+    //         setBoardEmail(response.data);
+    //     } catch (e) {
+    //         console.log(e);
+    //     }
+    // };
 
 
 
@@ -75,28 +87,21 @@ function BoardList() {
         setIsOpen(false);
     }
 
-    const allData = () => {
-        setCurrentPage(pageNumber[0]);
-        setSearchInput('');
-        setStartDate('');
-        setEndDate('');
-        getAllBoard();
-    }
+    // const allData = () => {
+    //     setCurrentPage(pageNumber[0]);
+    //     setSearchInput('');
+    //     setStartDate('');
+    //     setEndDate('');
+    //     getAllBoard();
+    // }
 
-    const searchFunction = () => {
-        setCurrentPage(pageNumber[0]);
-        getAllBoard();
-    }
+    // const searchFunction = () => {
+    //     setCurrentPage(pageNumber[0]);
+    //     getAllBoard();
+    // }
 
 
-    useEffect(() => {
-        getAllBoard('search');
-    }, [currentPage]);
 
-    // useEffect(() => {
-    //     getBoardCount();
-    //     getBoardEmail();
-    // }, [idx]);
 
     return (
         <><div id="WrapTitle">
@@ -122,18 +127,18 @@ function BoardList() {
 
                     <div className="box_search">
                         등록일
-                        <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={searchType !== "DATE"} /> ~
-                        <input type="date" className="comm_inp_date" onChange={(e) => setEndDate(e.target.value)} disabled={searchType !== "DATE"} />
-                        <select className="comm_sel ml_10" onChange={(e) => setSearchType(e.target.value)}>
+                        <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={search.searchType !== "DATE"} /> ~
+                        <input type="date" className="comm_inp_date" onChange={(e) => setEndDate(e.target.value)} disabled={search.searchType !== "DATE"} />
+                        <select className="comm_sel ml_10" onChange={(e) => setSearch({ ...search, searchType: e.target.value })}>
                             <option value={'TITLE'}>제목</option>
                             <option value={'TITLEANDCONTENT'}>제목+내용</option>
                             <option value={'WRITER'}>작성자</option>
                             <option value={'DATE'}>날짜</option>
                         </select>
-                        <input type="text" className="comm_inp_text" style={{ width: "300px" }} value={searchInput} onChange={(e) => setSearchInput(e.target.value)} disabled={searchType === "DATE"} />
-                        <button className="comm_btn fill" onClick={() => getAllBoard('search')}>검색</button>
+                        <input type="text" className="comm_inp_text" style={{ width: "300px" }} value={searchInput} onChange={(e) => setSearch({ ...search, searchInput: e.target.value })} disabled={search.searchType === "DATE"} />
+                        <button className="comm_btn fill" onClick={() => setSearch({ ...search, btnType: 'search' })}>검색</button>
 
-                        <button className="comm_btn fill" onClick={() => getAllBoard('init')}>전체목록</button>
+                        <button className="comm_btn fill" onClick={init}>전체목록</button>
                     </div>
                 </div>
             </div>
