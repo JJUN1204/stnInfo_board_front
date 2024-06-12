@@ -1,18 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-function BoardTable({ boardData, openModal }) {
+function BoardTable({ boardData, openPrivateModal, openFileModal, alertData, openEmailModal, searchText }) {
+    const navigate = useNavigate();
     const today = new Date();
-    const formattedDate = `${today.getFullYear()}-${
-        (today.getMonth() + 1).toString().padStart(2, '0') //두 자리 수가 되도록
-      }-${today.getDate().toString().padStart(2, '0')}`;
+    const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
 
-    useEffect(() => {
-        console.log(formattedDate);
-        console.log(boardData.createAt); 
-    }, []); 
+    const privateBoard = (isPrivate, boardIdx) => {
+        if (isPrivate === 1) {
+            openPrivateModal(boardIdx, 'private');
+        } else {
+            navigate(`/boardview/${boardIdx}`);
+        }
+    };
 
+    const privateFile = (isPrivate, boardIdx) => {
+        if (isPrivate === 1) {
+            openPrivateModal(boardIdx, 'file');
+        } else {
+            openFileModal(boardIdx);
+        }
+    };
 
+    const privateEmail = (isPrivate, boardIdx) => {
+        if (isPrivate === 1) {
+            openEmailModal(boardIdx, 'email');
+        } else {
+            openEmailModal(boardIdx);
+        }
+    };
+
+    const highlightText = (text, searchText) => {
+        if (!searchText) return text;
+        const regex = new RegExp(`(${searchText})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    };
 
     return (
         <table className="tbl_board">
@@ -34,63 +56,78 @@ function BoardTable({ boardData, openModal }) {
                     <th scope="col">조회수</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
+            {alertData.map((item, index) => (
+                <tr key={index}>
                     <td></td>
                     <td className="ta_l">
                         <a className="link_title" href="javascript:;">
-                            <span className="txt_label notice">공지</span> 공지사항 입니다.
+                            {item.isAlert === 1 && <span className="txt_label notice">공지</span>}
+                            <Link to={`/boardView/${item.idx}`}>{item.title}</Link>
                         </a>
-                    </td>
-                    <td>
-                        <a className="link_file" href="javascript:;">
-                            <span className="ico_img flie">첨부파일</span>10
-                        </a>
-                    </td>
-                    <td>
-                        <button className="link_writer" onClick={openModal}>홍길동</button>
-                    </td>
-                    <td>2024-04-15</td>
-                    <td>358</td>
-                </tr>
-                {boardData && boardData.map((item, index) => (
-                    <tr key={index}>
-                        <td>{item.idx}</td>
-                        <td className="ta_l">
-                            <a className="link_title" href="javascript:;">
-                                <Link to={`/boardView/${item.idx}`}>{item.title}</Link>
+                        {item.commentCount !== 0 &&
+                            <a className="link_file" href="javascript:;">
+                                <span className="txt_reply">({item.commentCount})</span>
                             </a>
-                            {item.commentCount !== 0 ?
-                                <a className="link_file" href="javascript:;">
-                                    <span className="txt_reply">({item.commentCount})</span>
+                        }
+                        {formattedDate === item.createAt &&
+                            <span className="ico_new">N</span>
+                        }
+                    </td>
+                    <td>
+                        {item.fileCount !== 0 &&
+                            <a className="link_file" href="javascript:;" onClick={() => privateFile(item.isPrivate, item.idx)}>
+                                <span className="ico_img flie">첨부파일</span>{item.fileCount}
+                            </a>
+                        }
+                    </td>
+                    <td>
+                        <button className="link_writer" onClick={() => privateEmail(item.isPrivate, item.idx)}>{item.writerId}</button>
+                    </td>
+                    <td>{item.createAt}</td>
+                    <td>{item.view}</td>
+                </tr>
+            ))}
+            <tbody>
+                {boardData !== null && boardData.length > 0 ? (
+                    boardData.map((item, index) => (
+                        <tr key={index}>
+                            <td>{item.idx}</td>
+                            <td className="ta_l">
+                                <a className="link_title" href="javascript:;" onClick={() => privateBoard(item.isPrivate, item.idx)}>
+                                    {item.isAlert === 1 && <span className="txt_label notice">공지</span>}
+                                    {item.isPrivate === 1 && <span className="ico_img lock">비밀글</span>}
+                                    <span dangerouslySetInnerHTML={{ __html: highlightText(item.title, searchText) }}></span>
                                 </a>
-                                :
-                                null
-                            }
-                            {formattedDate === item.createAt ?
-                                <span className="ico_new">N</span>
-                                :
-                                null
-                            }
-                            
-                        </td>
-                        <td>
-                            {item.fileCount !== 0 ?
-                                <a className="link_file" href="javascript:;">
-                                    <span className="ico_img flie">첨부파일</span>{item.fileCount}
-                                </a>
-                                :
-                                null
-                            }
-                        </td>
-                        <td>
-                            <button className="link_writer" onClick={openModal}>{item.writerId}</button>
-                        </td>
-                        <td>{item.createAt}</td>
-                        <td>5</td>
+                                {item.commentCount !== 0 && (
+                                    <a className="link_file" href="javascript:;">
+                                        <span className="txt_reply">({item.commentCount})</span>
+                                    </a>
+                                )}
+                                {formattedDate === item.createAt && (
+                                    <span className="ico_new">N</span>
+                                )}
+                            </td>
+                            <td>
+                                {item.fileCount !== 0 && (
+                                    <a className="link_file" href="javascript:;" onClick={() => privateFile(item.isPrivate, item.idx)}>
+                                        <span className="ico_img flie">첨부파일</span>{item.fileCount}
+                                    </a>
+                                )}
+                            </td>
+                            <td>
+                                <button className="link_writer" onClick={() => privateEmail(item.isPrivate, item.idx)}>{item.writerId}</button>
+                            </td>
+                            <td>{item.createAt}</td>
+                            <td>{item.view}</td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td colSpan="6">검색 결과가 없습니다.</td>
                     </tr>
-                ))}
+                )}
             </tbody>
+
         </table>
     );
 }

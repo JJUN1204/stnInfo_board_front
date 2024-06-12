@@ -4,111 +4,131 @@ import { Link } from 'react-router-dom';
 import '../css/common.css';
 import BoardTable from '../component/board/BoardTable';
 import Pagination from '../component/paging/PagiNation';
+import PasswordModal from '../component/popUpEvent/PasswordModal';
+import FileListPopUp from '../component/popUpEvent/FileListPopUp';
+import EmailSendPopUp from '../component/popUpEvent/EmailSendPopUp';
 
 function BoardList() {
-    const [idx, setIdx] = useState(5);
+    // 페이지 네이션
     const [currentPage, setCurrentPage] = useState(1);
     const [pageNumber, setPageNumber] = useState([]);
-    const [isOpen, setIsOpen] = useState(false);
+
+    // 비공개 모달
+    const [isPrivateOpen, setIsPrivateOpen] = useState(false);
+    const [isPrivateIdx, setIsPrivateIdx] = useState('');
+
+    // 모달 공통
+    const [modalAction, setModalAction] = useState('');
+
+    // 파일 모달
+    const [isFileListOpen, setIsFileListOpen] = useState(false);
+    const [isFileIndex, setIsFileIndex] = useState('');
+
+    // 이메일 모달
+    const [isEmailOpen, setIsEmailOpen] = useState(false);
+    const [isEmailIndex, setIsEmailIndex] = useState('');
+    const [email, setEmail] = useState('');
+
+
+    // 게시글 데이터
+    const [boardData, setBoardData] = useState([]);
+    const [alertBoard, setAlertBoard] = useState([]);
     const [boardCount, setBoardCount] = useState(0);
-    const [boardEmail, setBoardEmail] = useState('');
 
-    const [fileCount, setFileCount] = useState(0);
-    const [commentCount, setComentCount] = useState(0);
-
+    // 검색 상태 변수
     const [searchInput, setSearchInput] = useState('');
+    const [searchText, setSearchText] = useState('');
     const [searchType, setSearchType] = useState('TITLE');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const [boardData, setBoardData] = useState([]);
-    const [search, setSearch] = useState({
-        searchType: 'TITLE',
-        searchInput: '테스트',
-        btnType: 'init'
-       
-    });
-
-
-    const init = () => {
-        setSearch({ searchType: 'TITLE', searchInput: '', btnType: 'init' });
-    };
-
-    useEffect(() => {
-        getAllBoard();
-    }, [search.btnType]);
-
-
     const getAllBoard = async () => {
-
-        console.log(search.btnType)
-        console.log(search)
         try {
-
-            // 초기화 요청
-            const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}&searchType=${search.searchType}&searchInput=${search.searchInput}&startDate=${startDate}&endDate=${endDate}`);
+            const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}&searchType=${searchType}&searchInput=${searchInput}${startDate ? `&startDate=${startDate}` : ''}${endDate ? `&endDate=${endDate}` : ''}`);
+            setBoardCount(response.data.totalData);
             setBoardData(response.data.data);
+            setSearchInput("");
+            setStartDate('');
+            setEndDate('');
             setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
-
-
-
-
         } catch (e) {
-            console.error(e);  // 오류 발생 시 콘솔에 로그 출력
+            console.log(e);
         }
     };
 
+    const getAlert = async () => {
+        try {
+            const response = await axios.get("http://localhost:8081/getAlert");
+            setAlertBoard(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
-    // const getBoardCount = async () => {
-    //     try {
-    //         const response = await axios.get(`http://localhost:8081/getBoardCount`);
-    //         setBoardCount(response.data);
-    //     } catch (e) {
-    //         console.log(e);
-    //     }
-    // };
+    // 비공개 테스트 모달영역
+    const openPrivateModal = (boardIdx, action) => {
+        setIsPrivateOpen(true);
+        setIsPrivateIdx(boardIdx);
+        setModalAction(action);
+    };
 
-    // const getBoardEmail = async () => {
-    //     try {
-    //         const response = await axios.get(`http://localhost:8081/getEmail?idx=${idx}`);
-    //         setBoardEmail(response.data);
-    //     } catch (e) {
-    //         console.log(e);
-    //     }
-    // };
+    const closePrivateModal = () => {
+        setIsPrivateOpen(false);
+    };
 
+    // 파일 테스트 모달영역
+    const openFileModal = (boardIdx) => {
+        setIsFileListOpen(true);
+        setIsFileIndex(boardIdx);
+    };
 
+    const closeFileModal = () => {
+        setIsFileListOpen(false);
+    };
 
-    const openModal = () => {
-        setIsOpen(true);
-    }
+    // 이메일 테스트 모달영역
+    const openEmailModal = (boardIdx) => {
+        setIsEmailOpen(true);
+        setIsEmailIndex(boardIdx);
+        
+    };
 
-    const closeModal = () => {
-        setIsOpen(false);
-    }
+    const closeEmailModal = () => {
+        setIsEmailOpen(false);
+    };
 
-    // const allData = () => {
-    //     setCurrentPage(pageNumber[0]);
-    //     setSearchInput('');
-    //     setStartDate('');
-    //     setEndDate('');
-    //     getAllBoard();
-    // }
+    // 모든 데이터 불러오기
+    const AllData = () => {
+        if(currentPage === 0){
+            setCurrentPage(0);
+        }else{
+            setCurrentPage(pageNumber[0]);
+        }
+        
+        getAllBoard();
+        setSearchText('');
+    };
 
-    // const searchFunction = () => {
-    //     setCurrentPage(pageNumber[0]);
-    //     getAllBoard();
-    // }
+    // 검색 데이터 불러오기
+    const searchFunction = () => {
+        setCurrentPage(pageNumber[0]);
+        setSearchText(searchInput);
+        getAllBoard();
+    };
 
-
-
+    useEffect(() => {
+        getAllBoard(currentPage);
+        getAlert(currentPage);
+    }, [currentPage]);
 
     return (
-        <><div id="WrapTitle">
-            <div className="container">
-                <h1 className="logo">STN INFOTECH</h1>
+        <>
+            <div id="WrapTitle">
+                <div className="container">
+                    <h1 className="logo">STN INFOTECH</h1>
+                </div>
             </div>
-        </div><div id="WrapContainer">
+            <div id="WrapContainer">
                 <div className="container">
                     <div className="wrap_tit">
                         <h2 className="tit_cont">자유게시판</h2>
@@ -117,89 +137,42 @@ function BoardList() {
                         </div>
                     </div>
 
-                    <BoardTable boardData={boardData} openModal={openModal} />
+                    <BoardTable boardData={boardData} openPrivateModal={openPrivateModal} openFileModal={openFileModal} alertData={alertBoard} openEmailModal={openEmailModal} searchText={searchText} />
 
                     <Pagination currentPage={currentPage} pageNumber={pageNumber} setCurrentPage={setCurrentPage} />
 
                     <div className="flo_side right">
-                        <button className="comm_btn_round fill"><Link to='/boardwrite'>글쓰기</Link></button>
+                        <button className="comm_btn_round fill"><Link to='/boardwrite' style={{color:"white"}}>글쓰기</Link></button>
                     </div>
 
                     <div className="box_search">
                         등록일
-                        <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={search.searchType !== "DATE"} /> ~
-                        <input type="date" className="comm_inp_date" onChange={(e) => setEndDate(e.target.value)} disabled={search.searchType !== "DATE"} />
-                        <select className="comm_sel ml_10" onChange={(e) => setSearch({ ...search, searchType: e.target.value })}>
+                        <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={searchType !== "DATE"} /> ~
+                        <input type="date" className="comm_inp_date" onChange={(e) => setEndDate(e.target.value)} disabled={searchType !== "DATE"} />
+                        <select className="comm_sel ml_10" onChange={(e) => setSearchType(e.target.value)}>
                             <option value={'TITLE'}>제목</option>
                             <option value={'TITLEANDCONTENT'}>제목+내용</option>
                             <option value={'WRITER'}>작성자</option>
                             <option value={'DATE'}>날짜</option>
                         </select>
-                        <input type="text" className="comm_inp_text" style={{ width: "300px" }} value={searchInput} onChange={(e) => setSearch({ ...search, searchInput: e.target.value })} disabled={search.searchType === "DATE"} />
-                        <button className="comm_btn fill" onClick={() => setSearch({ ...search, btnType: 'search' })}>검색</button>
+                        <input type="text" className="comm_inp_text" style={{ width: "300px" }} value={searchInput} onChange={(e) => setSearchInput(e.target.value)} disabled={searchType === "DATE"} />
+                        <button className="comm_btn fill" onClick={searchFunction}>검색</button>
 
-                        <button className="comm_btn fill" onClick={init}>전체목록</button>
+                        <button className="comm_btn fill" onClick={AllData}>전체목록</button>
                     </div>
                 </div>
             </div>
-            {
-                isOpen &&
-                <div className="comm_popup" style={{ width: "400px", left: "73%" }}>
-                    <form>
-                        <fieldset className="blind">이메일 보내기</fieldset>
-                        <div className="wrap_tit">
-                            <span className="tit_pop">이메일 보내기</span>
-                            <button type="button" className="btn_close" onClick={closeModal}>
-                                닫기
-                            </button>
-                        </div>
-                        <div className="wrap_cont">
-                            <table className="tbl_pop">
-                                <tbody>
-                                    <tr>
-                                        <th>보내는 사람</th>
-                                        <td>
-                                            <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null} />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>받는 사람</th>
-                                        <td>
-                                            <input type="text" className="comm_inp_text" value={boardEmail} style={{ width: "100%" }} onChange={null} />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>제목</th>
-                                        <td>
-                                            <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null} />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>내용</th>
-                                        <td>
-                                            <textarea className="comm_textarea" style={{ width: "100%" }} onChange={null} />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>파일</th>
-                                        <td>
-                                            <input type="file" className="comm_inp_file" style={{ width: "100%" }} onChange={null} />
-                                            <ul className="list_file_inline mt_5">
-                                                <li>
-                                                    file_20240425.zip <button className="btn_ico_del">삭제</button>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="wrap_bottom">
-                            <button className="comm_btn_round" onClick={closeModal}>닫기</button>
-                            <button className="comm_btn_round fill">보내기</button>
-                        </div>
-                    </form>
-                </div>
+
+            {isEmailOpen &&
+                <EmailSendPopUp isOpen={isEmailOpen} closeModal={closeEmailModal} boardIdx={isEmailIndex}></EmailSendPopUp>
+            }
+
+            {isFileListOpen &&
+                <FileListPopUp isOpen={isFileListOpen} closeModal={closeFileModal} boardIdx={isFileIndex}></FileListPopUp>
+            }
+
+            {isPrivateOpen &&
+                <PasswordModal isOpen={isPrivateOpen} closeModal={closePrivateModal} boardIdx={isPrivateIdx} modalAction={modalAction} openFileModal={openFileModal}></PasswordModal>
             }
         </>
     );

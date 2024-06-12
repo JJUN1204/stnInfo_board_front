@@ -182,7 +182,7 @@ function BoardWrite() {
 
                     <div className="comm_paging_btn">
                         <div className="flo_side left">
-                            <button className="comm_btn_round fill"><Link to='/'>목록</Link></button>
+                            <button className="comm_btn_round fill"><Link to='/' style={{color:"white"}}>목록</Link></button>
                         </div>
                         <div className="flo_side right">
                             <button className="comm_btn_round"><Link to='/'>취소</Link></button>
