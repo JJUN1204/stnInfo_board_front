@@ -187,7 +187,7 @@ function BoardView() {
                                 {commentLists.map((comment, index) => (
                                     <li key={index}>
                                         <div className="info">
-                                            <strong>{comment.writerId}</strong><span className="fc_g ml_5">{comment.createAt}</span>
+                                            <strong>유저</strong><span className="fc_g ml_5">{comment.createAt}</span>
                                             <span className="ml_10">
                                                 <button className="comm_btn_small" onClick={() => openBoardModal('deleteComment', comment.idx)}>삭제</button>
                                                 <button className="comm_btn_small" onClick={() => openCommentEditModal(comment.idx)}>수정</button>
@@ -220,7 +220,7 @@ function BoardView() {
                             <button className="comm_btn_round" onClick={() => openBoardModal('delete')}>삭제</button>
                         </div>
                         <div className="flo_side right">
-                            <button className="comm_btn_round fill" onClick={() => openBoardModal('reply')}>답글</button>
+                            <button className="comm_btn_round fill" onClick={() => openBoardModal('reply')} disabled={boardViewData.isAlert === 1}>답글</button>
                             <button className="comm_btn_round fill" onClick={() => openBoardModal('update')}>수정</button>
                         </div>
                     </div>
