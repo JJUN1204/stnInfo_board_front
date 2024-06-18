@@ -1,7 +1,13 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 
 function BoardTable({ boardData, openPrivateModal, openFileModal, alertData, openEmailModal, searchText }) {
+
+    useEffect(() => {
+        console.log(formattedDate);
+    
+    }, []);
+
     const navigate = useNavigate();
     const today = new Date();
     const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
@@ -32,8 +38,8 @@ function BoardTable({ boardData, openPrivateModal, openFileModal, alertData, ope
 
     const highlightText = (text, searchText) => {
         if (!searchText) return text;
-        const regex = new RegExp(`(${searchText})`, 'gi');
-        return text.replace(regex, '<mark>$1</mark>');
+        const regex = new RegExp(`(${searchText})`, 'gi'); //정규표현식
+        return text.replace(regex, '<mark>$1</mark>'); //text 문자열에서 검색어를 찾아내고, 각 검색어를 <mark> 태그로 감싸서 반환합니다. 
     };
 
     return (

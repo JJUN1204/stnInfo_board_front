@@ -115,23 +115,22 @@ function BoardEdit() {
         }));
     };
 
-    // 파일이 선택될 때 호출되는 함수
     const handleChangeFile = (event) => {
         const fileList = Array.from(event.target.files); // 파일 목록을 배열로 변환
         console.log(fileList); // 파일 목록을 콘솔에 출력
-        setInput(prevState => ({
-            ...prevState,
-            files: [...prevState.files, ...fileList] // 기존 파일 목록에 새 파일을 추가
-        }));
+        setInput({
+            ...input,
+            files: [...input.files, ...fileList] // 기존 파일 목록에 새 파일을 추가
+        });
     };
-
-    // 파일을 삭제하는 함수
+    
     const handleDeleteFile = (index) => {
-        setInput(prevState => ({
-            ...prevState,
-            files: prevState.files.filter((_, i) => i !== index) // 선택된 파일을 목록에서 제거
-        }));
+        setInput({
+            ...input,
+            files: input.files.filter((_, i) => i !== index) // 선택된 파일을 목록에서 제거
+        });
     };
+    
 
     // 게시물을 업데이트하는 함수
     const boardUpdate = async () => {

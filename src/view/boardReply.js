@@ -63,7 +63,7 @@ function BoardReply() {
                 }
             });
     
-            if (response.data.result === "UPDATE_COMPLETE") {
+            if (response.data.result === "INSERT_COMPLETE") {
                 navigate('/'); // 등록이 완료되면 홈 페이지로 이동합니다.
             }
         } catch (e) {
@@ -149,7 +149,7 @@ function BoardReply() {
                                 <dt>작성자</dt>
                                 <dd><input type="text" name='writerId' className="comm_inp_text" style={{ width: '80px' }} value={writerId} onChange={(e) => {setWriterId(e.target.value)}}/></dd>
                                 <dt>비밀번호</dt>
-                                <dd><input type="text" name='pwd' className="comm_inp_text" style={{ width: '100px' }} value={pwd} onChange={(e) => {setPwd(e.target.value)}}/></dd>
+                                <dd><input type="password" name='pwd' className="comm_inp_text" style={{ width: '100px' }} value={pwd} onChange={(e) => {setPwd(e.target.value)}}/></dd>
                                 <dt>이메일</dt>
                                 <dd><input type="text" name='email' className="comm_inp_text" style={{ width: '150px' }} value={email} onChange={(e) => {setEmail(e.target.value)}}/></dd>
                             </dl>

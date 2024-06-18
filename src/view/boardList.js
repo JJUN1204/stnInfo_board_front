@@ -47,9 +47,6 @@ function BoardList() {
             const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}&searchType=${searchType}&searchInput=${searchInput}${startDate ? `&startDate=${startDate}` : ''}${endDate ? `&endDate=${endDate}` : ''}`);
             setBoardCount(response.data.totalData);
             setBoardData(response.data.data);
-            setSearchInput("");
-            setStartDate('');
-            setEndDate('');
             setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
         } catch (e) {
             console.log(e);
@@ -99,27 +96,26 @@ function BoardList() {
 
     // 모든 데이터 불러오기
     const AllData = () => {
-        if(currentPage === 0){
-            setCurrentPage(0);
-        }else{
-            setCurrentPage(pageNumber[0]);
-        }
-        
         getAllBoard();
-        setSearchText('');
+        setCurrentPage(pageNumber[0]);
+        setStartDate('');
+        setEndDate('');
+        setSearchInput('');
     };
 
     // 검색 데이터 불러오기
     const searchFunction = () => {
         setCurrentPage(pageNumber[0]);
-        setSearchText(searchInput);
         getAllBoard();
     };
 
     useEffect(() => {
         getAllBoard(currentPage);
-        getAlert(currentPage);
     }, [currentPage]);
+
+    useEffect(() => {
+        getAlert();
+    }, []);
 
     return (
         <>
@@ -136,15 +132,14 @@ function BoardList() {
                             총 갯수 <strong className="fc_p">{boardCount}</strong>건{" "}
                         </div>
                     </div>
-
-                    <BoardTable boardData={boardData} openPrivateModal={openPrivateModal} openFileModal={openFileModal} alertData={alertBoard} openEmailModal={openEmailModal} searchText={searchText} />
+                    <BoardTable boardData={boardData} openPrivateModal={openPrivateModal} openFileModal={openFileModal} alertData={alertBoard} openEmailModal={openEmailModal} searchText={searchInput} />
 
                     <Pagination currentPage={currentPage} pageNumber={pageNumber} setCurrentPage={setCurrentPage} />
 
                     <div className="flo_side right">
                         <button className="comm_btn_round fill"><Link to='/boardwrite' style={{color:"white"}}>글쓰기</Link></button>
                     </div>
-
+                    {/* 액션에 따라 분류 */}
                     <div className="box_search">
                         등록일
                         <input type="date" className="comm_inp_date ml_5" onChange={(e) => setStartDate(e.target.value)} disabled={searchType !== "DATE"} /> ~
@@ -163,6 +158,7 @@ function BoardList() {
                 </div>
             </div>
 
+            {/* 참일때 컴포넌트에 props 전달 */}
             {isEmailOpen &&
                 <EmailSendPopUp isOpen={isEmailOpen} closeModal={closeEmailModal} boardIdx={isEmailIndex}></EmailSendPopUp>
             }

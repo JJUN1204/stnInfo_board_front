@@ -39,6 +39,10 @@ function BoardView() {
         setIsBoardDelOpen(true);
     }
 
+    const openReplyModal = () => {
+        navigate(`/boardview/${boardIdx}/boardReply`);
+    }
+
     const closeBoardModal = () => {
         setIsBoardDelOpen(false);
     }
@@ -220,7 +224,7 @@ function BoardView() {
                             <button className="comm_btn_round" onClick={() => openBoardModal('delete')}>삭제</button>
                         </div>
                         <div className="flo_side right">
-                            <button className="comm_btn_round fill" onClick={() => openBoardModal('reply')} disabled={boardViewData.isAlert === 1}>답글</button>
+                            <button className="comm_btn_round fill" onClick={() => openReplyModal()} disabled={boardViewData.isAlert === 1}>답글</button>
                             <button className="comm_btn_round fill" onClick={() => openBoardModal('update')}>수정</button>
                         </div>
                     </div>

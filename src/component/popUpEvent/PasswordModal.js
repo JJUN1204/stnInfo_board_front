@@ -6,59 +6,49 @@ function PasswordModal({ isOpen, closeModal, boardIdx, modalAction, openFileModa
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const checkPassword = async (password, boardIdx, commentIdx = null) => {
+    const handlePasswordSubmit = async () => {
         try {
-            const response = await axios.post('http://localhost:8081/checkPassword', null, {
-                params: { boardIdx: boardIdx, password: password, idx: commentIdx }
+            const response = await axios.post('http://localhost:8081/processAction', null, {
+                params: {
+                    action: modalAction,
+                    password: password,
+                    boardIdx: boardIdx,
+                    commentIdx: modalAction.includes('Comment') ? commentIdx : null
+                }
             });
-            return response.data;
+
+            if (response.data.result === "PASSWORDERROR") {
+                alert("비밀번호가 일치하지 않습니다.");
+                setPassword('');
+                return;
+            }
+
+            switch (response.data.result) {
+                case 'PRIVATE_ACCESS':
+                    navigate(`/boardview/${boardIdx}`);
+                    break;
+                case 'FILE_ACCESS':
+                    openFileModal(boardIdx);
+                    break;
+                case 'UPDATE_ACCESS':
+                    navigate(`/boardview/${boardIdx}/boardEdit`);
+                    break;
+                case 'DELETE_COMPLETE':
+                    navigate('/');
+                    break;
+                case 'DELETE_COMMENT_COMPLETE':
+                    refreshComments();
+                    break;
+                default:
+                    alert("오류");
+                    break;
+            }
         } catch (e) {
             console.log(e);
-            return false;
+            alert("오류");
+        } finally {
+            closeModal();
         }
-    };
-
-    const handlePasswordSubmit = async () => {
-        const isValidPassword = await checkPassword(password, boardIdx, modalAction.includes('Comment') ? commentIdx : null);
-        if (!isValidPassword) {
-            alert("비밀번호가 일치하지 않습니다.");
-            setPassword('');
-            return;
-        }
-
-        console.log(modalAction)
-
-        if (modalAction === 'private') {
-            navigate(`/boardview/${boardIdx}`);
-        } else if (modalAction === 'file') {
-            openFileModal(boardIdx);
-        } else if (modalAction === 'update') {
-            navigate(`/boardview/${boardIdx}/boardEdit`);
-        } else if (modalAction === 'delete') {
-            try {
-                const response = await axios.delete(`http://localhost:8081/deleteBoard?idx=${boardIdx}`);
-                if (response.data.result === "DELETE_COMPLETE") {
-                    navigate('/'); // 홈으로 이동
-                }else{
-                    alert(response.data.result);
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        } else if(modalAction === 'reply'){
-            navigate(`/boardview/${boardIdx}/boardReply`);
-        } else if (modalAction === 'deleteComment') {
-            try {
-                const response = await axios.delete(`http://localhost:8081/deleteCommentByIdx?idx=${commentIdx}`);
-                if (response.data.result === "DELETE_COMMENT_COMPLETE") {
-                    refreshComments();
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        } 
-
-        closeModal();
     };
 
     if (!isOpen) return null;

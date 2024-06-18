@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
-function SendEmailPopup({isOpen,closeModal, email ,boardIdx}) {
+function SendEmailPopup({isOpen,closeModal ,boardIdx}) {
   const [from, setFrom] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [email, setEmail] = useState("");
   const [files, setFiles] = useState([]);
   const fileRef = useRef();
 
@@ -12,17 +13,10 @@ function SendEmailPopup({isOpen,closeModal, email ,boardIdx}) {
     getBoardIdx();
 }, []);
 
-
-
-const [boardViewData, setBoardViewData] = useState([]);
-
-
-
-
 const getBoardIdx = async () => {
     try {
         const response = await axios.get(`http://localhost:8081/getBoardIdx?idx=${boardIdx}`);
-        setBoardViewData(response.data);
+        setEmail(response.data.email);
     } catch (e) {
         console.log(e);
     }
@@ -54,7 +48,7 @@ const getBoardIdx = async () => {
         formData.append("files", file);
       });
 
-      const res = await axios.post("/api/mail/sendMail", formData);
+      const res = await axios.post("http://localhost:8081/sendMail", formData);
       if (res.data.message === "SENDED_EMAIL") {
         closeModal();
       } else if (res.data.message === "SENDING_EMAIL_ERROR") {
@@ -67,7 +61,7 @@ const getBoardIdx = async () => {
   }
 
 
-
+  if (!isOpen) return null;
   return (
     <div className="comm_popup">
       <fieldset className="blind">이메일 보내기</fieldset>
@@ -84,7 +78,7 @@ const getBoardIdx = async () => {
             </tr>
             <tr>
               <th>받는 사람</th>
-              <td><input type="text" className="comm_inp_text" value={boardViewData.email} style={{ width: "100%" }} readOnly /></td>
+              <td><input type="text" className="comm_inp_text" value={email} style={{ width: "100%" }} readOnly /></td>
             </tr>
             <tr>
               <th>제목</th>
